@@ -7,16 +7,16 @@ import urllib.parse
 app = Flask(__name__)
 
 # SETTINGS
-YOUR_LOCALHOST_PORT = '8282'
-YOUR_CLIENT_ID = 'pq5ES2KwR3uJBTSbUblOk6Crb5P8pw9J'
-YOUR_CLIENT_SECRET = 'KvHP4dnV5HhctyQvByOaJNnd'
+YOUR_LOCALHOST_PORT = 'YOUR_PORT'
+YOUR_CLIENT_ID = 'YOUR_CLIENT_ID'
+YOUR_CLIENT_SECRET = 'YOUR_CLIENT_SECRET'
 YOUR_APPS_SCOPE = 'task:write subscriptions:write subscriptions:read channels.messages:read'
 
 # This REDIRECT_URI should be registered to your app's management page
-YOUR_REDIRECT_URI = 'https://devrel.ngrok.io/oauth'
+YOUR_REDIRECT_URI = 'YOUR_TUNNEL_URL/oauth'
 
 # This is the project ID of the project you want to create tasks in.
-YOUR_PROJECT_ID = '230516082780M3cyZtU'
+YOUR_PROJECT_ID = 'YOUR_PROJECT_ID'
 
 @app.route('/')
 def root():
@@ -50,7 +50,7 @@ def oauth():
 		response = requests.post(post_url, headers=post_headers, data=post_body)
 
 		# Save the token to a file
-		with open('sample_token.json', 'w', encoding='utf-8') as file:
+		with open('sample_token_app.json', 'w', encoding='utf-8') as file:
 			json_data = response.json()
 			json.dump(json_data, file, indent=4, ensure_ascii=False)
 
@@ -60,7 +60,7 @@ def oauth():
 @app.route('/subscription/create/<workspace_id>/<channel_id>')
 def subscription_create(workspace_id, channel_id):
 	swit_access_token = ""
-	with open('sample_token.json', 'r', encoding='utf-8') as file:
+	with open('sample_token_app.json', 'r', encoding='utf-8') as file:
 		json_data = json.load(file)
 		swit_access_token = json_data['access_token']
 
@@ -79,7 +79,7 @@ def subscription_create(workspace_id, channel_id):
 @app.route('/subscription/delete/<subscription_id>')
 def subscription_delete(subscription_id):
 	swit_access_token = ""
-	with open('sample_token.json', 'r', encoding='utf-8') as file:
+	with open('sample_token_app.json', 'r', encoding='utf-8') as file:
 		json_data = json.load(file)
 		swit_access_token = json_data['access_token']
 
@@ -95,7 +95,7 @@ def subscription_delete(subscription_id):
 @app.route('/subscription/read/<subscription_id>')
 def subscription_read(subscription_id):
 	swit_access_token = ""
-	with open('sample_token.json', 'r', encoding='utf-8') as file:
+	with open('sample_token_app.json', 'r', encoding='utf-8') as file:
 		json_data = json.load(file)
 		swit_access_token = json_data['access_token']
 
@@ -114,7 +114,7 @@ def subscription_read(subscription_id):
 @app.route('/subscription/read')
 def subscription_read_all():
 	swit_access_token = ""
-	with open('sample_token.json', 'r', encoding='utf-8') as file:
+	with open('sample_token_app.json', 'r', encoding='utf-8') as file:
 		json_data = json.load(file)
 		swit_access_token = json_data['access_token']
 
@@ -138,7 +138,7 @@ def token_refresh(refresh_token):
 	response = requests.post(token_url, headers=token_headers, data=token_data)
 
 	if response.status_code == 200:
-		with open('sample_token.json', 'w', encoding='utf-8') as file:
+		with open('sample_token_app.json', 'w', encoding='utf-8') as file:
 			json_data = response.json()
 			json.dump(json_data, file, indent=4, ensure_ascii=False)
 		return response.json()["access_token"]
@@ -158,7 +158,7 @@ def task_create(token, project_id, task_title):
 
 	if response.status_code == 401:
 		swit_refresh_token = ""
-		with open('sample_token.json', 'r', encoding='utf-8') as file:
+		with open('sample_token_app.json', 'r', encoding='utf-8') as file:
 			json_data = json.load(file)
 			swit_refresh_token = json_data['refresh_token']
 
@@ -176,7 +176,7 @@ def event():
 	content = event_data['details']['message']['content']
 	if content[:6] == "[task]":
 		swit_access_token = ""
-		with open('sample_token.json', 'r', encoding='utf-8') as file:
+		with open('sample_token_app.json', 'r', encoding='utf-8') as file:
 			json_data = json.load(file)
 			swit_access_token = json_data['access_token']
 
