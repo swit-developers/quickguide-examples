@@ -10,13 +10,14 @@ app = Flask(__name__)
 YOUR_LOCALHOST_PORT = 'YOUR_PORT'
 YOUR_CLIENT_ID = 'YOUR_CLIENT_ID'
 YOUR_CLIENT_SECRET = 'YOUR_CLIENT_SECRET'
-YOUR_APPS_SCOPE = 'task:write subscriptions:write subscriptions:read channels.messages:read'
+YOUR_APPS_SCOPE = 'task:write'
 
 # This REDIRECT_URI should be registered to your app's management page
-YOUR_REDIRECT_URI = 'YOUR_TUNNEL_URL/oauth'
+YOUR_REDIRECT_URI = 'YOUR_APP_SERVER_URL' + '/oauth'
 
 # This is the project ID of the project you want to create tasks in.
-YOUR_PROJECT_ID = 'YOUR_PROJECT_ID'
+YOUR_PROJECT_ID = 'THE_SWIT_PROJECT_ID_YOU_WANT'
+
 
 @app.route('/')
 def root():
@@ -30,10 +31,11 @@ def oauth():
 	if code is None:
 		# redirect to GET request for authorization confirmation
 		get_url = "https://openapi.swit.io/oauth/authorize"
-		get_params_for_query_string = urllib.parse.urlencode({"client_id": YOUR_CLIENT_ID,
-		                                                      "redirect_uri": YOUR_REDIRECT_URI,
-		                                                      "scope": YOUR_APPS_SCOPE,
-		                                                      "response_type": "code"})
+		get_params_for_query_string = urllib.parse.urlencode({
+			"client_id": YOUR_CLIENT_ID,
+			"redirect_uri": YOUR_REDIRECT_URI,
+			"scope": YOUR_APPS_SCOPE,
+			"response_type": "code"})
 		return redirect(get_url + "?" + get_params_for_query_string)
 
 	else:
@@ -50,80 +52,11 @@ def oauth():
 		response = requests.post(post_url, headers=post_headers, data=post_body)
 
 		# Save the token to a file
-		with open('sample_token_app.json', 'w', encoding='utf-8') as file:
+		with open('sample_token.json', 'w', encoding='utf-8') as file:
 			json_data = response.json()
 			json.dump(json_data, file, indent=4, ensure_ascii=False)
 
 		return response.json()
-
-
-@app.route('/subscription/create/<workspace_id>/<channel_id>')
-def subscription_create(workspace_id, channel_id):
-	swit_access_token = ""
-	with open('sample_token_app.json', 'r', encoding='utf-8') as file:
-		json_data = json.load(file)
-		swit_access_token = json_data['access_token']
-
-	subscription_url = "https://openapi.swit.io/v2/subscriptions"
-	subscription_headers = {
-		"content-type": "application/json",
-		"authorization": "Bearer " + swit_access_token}
-	subscription_body = {
-		"event_source": "/workspaces/" + workspace_id + "/channels/" + channel_id,
-		"resource_type": "channels.messages"}
-	response = requests.post(subscription_url, headers=subscription_headers, json=subscription_body)
-
-	return response.json()
-
-
-@app.route('/subscription/delete/<subscription_id>')
-def subscription_delete(subscription_id):
-	swit_access_token = ""
-	with open('sample_token_app.json', 'r', encoding='utf-8') as file:
-		json_data = json.load(file)
-		swit_access_token = json_data['access_token']
-
-	subscription_url = "https://openapi.swit.io/v2/subscriptions/" + subscription_id
-	subscription_headers = {
-		"content-type": "application/json",
-		"authorization": "Bearer " + swit_access_token}
-	response = requests.delete(subscription_url, headers=subscription_headers)
-
-	return response.text
-
-
-@app.route('/subscription/read/<subscription_id>')
-def subscription_read(subscription_id):
-	swit_access_token = ""
-	with open('sample_token_app.json', 'r', encoding='utf-8') as file:
-		json_data = json.load(file)
-		swit_access_token = json_data['access_token']
-
-	subscription_url = "https://openapi.swit.io/v2/subscriptions"
-	subscription_headers = {
-		"content-type": "application/json",
-		"authorization": "Bearer " + swit_access_token}
-
-	if subscription_id != "all":
-		subscription_url = "https://openapi.swit.io/v2/subscriptions/" + subscription_id
-
-	response = requests.get(subscription_url, headers=subscription_headers)
-	return response.json()
-
-
-@app.route('/subscription/read')
-def subscription_read_all():
-	swit_access_token = ""
-	with open('sample_token_app.json', 'r', encoding='utf-8') as file:
-		json_data = json.load(file)
-		swit_access_token = json_data['access_token']
-
-	subscription_url = "https://openapi.swit.io/v2/subscriptions"
-	subscription_headers = {
-		"content-type": "application/json",
-		"authorization": "Bearer " + swit_access_token}
-	response = requests.get(subscription_url, headers=subscription_headers)
-	return response.json()
 
 
 def token_refresh(refresh_token):
@@ -137,8 +70,8 @@ def token_refresh(refresh_token):
 		"refresh_token": refresh_token}
 	response = requests.post(token_url, headers=token_headers, data=token_data)
 
-	if response.status_code == 200:
-		with open('sample_token_app.json', 'w', encoding='utf-8') as file:
+	if response.ok:
+		with open('sample_token.json', 'w', encoding='utf-8') as file:
 			json_data = response.json()
 			json.dump(json_data, file, indent=4, ensure_ascii=False)
 		return response.json()["access_token"]
@@ -158,7 +91,7 @@ def task_create(token, project_id, task_title):
 
 	if response.status_code == 401:
 		swit_refresh_token = ""
-		with open('sample_token_app.json', 'r', encoding='utf-8') as file:
+		with open('sample_token.json', 'r', encoding='utf-8') as file:
 			json_data = json.load(file)
 			swit_refresh_token = json_data['refresh_token']
 
@@ -176,7 +109,7 @@ def event():
 	content = event_data['details']['message']['content']
 	if content[:6] == "[task]":
 		swit_access_token = ""
-		with open('sample_token_app.json', 'r', encoding='utf-8') as file:
+		with open('sample_token.json', 'r', encoding='utf-8') as file:
 			json_data = json.load(file)
 			swit_access_token = json_data['access_token']
 
