@@ -26,7 +26,6 @@ def root():
 def oauth():
 	'''redirect to GET request for authorization confirmation'''
 	get_url = "https://openapi.swit.io/oauth/authorize"
-
 	get_params_for_query_string = urllib.parse.urlencode({
 		"client_id": YOUR_CLIENT_ID,
 		"redirect_uri": YOUR_REDIRECT_URI,
