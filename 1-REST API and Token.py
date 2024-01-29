@@ -4,11 +4,14 @@ import urllib.parse
 
 app = Flask(__name__)
 
-# SETTINGS
-YOUR_LOCALHOST_PORT = 'YOUR_PORT'
+## SETTINGS
+# If you change this, you should change the Allowed redirect URLs
+YOUR_LOCALHOST_PORT = '8282'
+
+# These are copied from your app's management page
 YOUR_CLIENT_ID = 'YOUR_CLIENT_ID'
 YOUR_CLIENT_SECRET = 'YOUR_CLIENT_SECRET'
-YOUR_APPS_SCOPE = 'YOUR_APPS_SCOPE'
+YOUR_APPS_SCOPE = 'task:write'
 
 # This REDIRECT_URI should be registered to your app's management page
 YOUR_REDIRECT_URI = 'http://localhost:' + YOUR_LOCALHOST_PORT + '/oauth/callback'
