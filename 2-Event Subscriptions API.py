@@ -33,7 +33,6 @@ def oauth():
 
 	if code is None:
 		get_url = "https://openapi.swit.io/oauth/authorize"
-
 		get_params_for_query_string = urllib.parse.urlencode({
 			"client_id": YOUR_CLIENT_ID,
 			"redirect_uri": YOUR_REDIRECT_URI,
@@ -51,12 +50,13 @@ def oauth():
 			"client_secret": YOUR_CLIENT_SECRET,
 			"redirect_uri": YOUR_REDIRECT_URI,
 			"code": code,
-			"grant_type": "authorization_code", }
+			"grant_type": "authorization_code"}
+
 		response = requests.post(post_url, headers=post_headers, data=post_body)
+		json_data = response.json()
 
 		# Save the token to a file
 		with open('sample_token.json', 'w', encoding='utf-8') as file:
-			json_data = response.json()
 			json.dump(json_data, file, indent=4, ensure_ascii=False)
 
 		return response.json()
@@ -72,10 +72,10 @@ def token_refresh(refresh_token):
 		"client_secret": YOUR_CLIENT_SECRET,
 		"refresh_token": refresh_token}
 	response = requests.post(token_url, headers=token_headers, data=token_data)
+	json_data = response.json()
 
 	if response.ok:
 		with open('sample_token.json', 'w', encoding='utf-8') as file:
-			json_data = response.json()
 			json.dump(json_data, file, indent=4, ensure_ascii=False)
 		return response.json()["access_token"]
 	else:

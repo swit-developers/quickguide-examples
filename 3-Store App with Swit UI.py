@@ -1,8 +1,7 @@
-import json
-
 from flask import Flask, redirect, request
 import requests
 import urllib.parse
+import json
 
 app = Flask(__name__)
 
@@ -14,34 +13,31 @@ YOUR_USERS_SCOPE = 'channel:read message:write'
 YOUR_APPS_SCOPE = 'app:install ' + YOUR_USERS_SCOPE
 
 # This REDIRECT_URI should be registered to your app's management page
-YOUR_REDIRECT_URI = 'YOUR_TUNNEL_URL/oauth'
-
-@app.route('/')
-def root():
-	return "This is the root of Your app."
+YOUR_REDIRECT_URI = 'YOUR_PUBLIC_SERVER_URL' + '/oauth'
 
 
 @app.route('/oauth')
 def oauth():
+	'''
+	1st step for Oauth: getting the code
+	2nd step for Oauth: getting the token
+	'''
 	code = request.args.get('code')
 	state = request.args.get('state')
 	type = request.args.get('type')
 
 	if code is None:
-		# first step for Oauth: getting the code
 		get_url = "https://openapi.swit.io/oauth/authorize"
-		json_for_redirect = {
+		get_params_for_query_string = urllib.parse.urlencode({
 			"client_id": YOUR_CLIENT_ID,
 			"redirect_uri": YOUR_REDIRECT_URI,
 			"scope": YOUR_APPS_SCOPE if type == 'app' else YOUR_USERS_SCOPE,
 			"response_type": "code",
-			"state": type}
-		get_params_for_query_string = urllib.parse.urlencode(json_for_redirect)
+			"state": type})
 
 		return redirect(get_url + "?" + get_params_for_query_string)
 
 	else:
-		# second step for Oauth: getting the token
 		post_url = "https://openapi.swit.io/oauth/token"
 		post_headers = {
 			"content-Type": "application/x-www-form-urlencoded"}
@@ -54,6 +50,8 @@ def oauth():
 
 		response = requests.post(post_url, headers=post_headers, data=post_body)
 		json_data = response.json()
+
+		# if state is 'app', then it is the app's token
 		json_data['user_id'] = state
 
 		# save token to json file
@@ -74,10 +72,10 @@ def token_refresh(refresh_token, json_file_name="sample_token_app.json"):
 		"client_secret": YOUR_CLIENT_SECRET,
 		"refresh_token": refresh_token}
 	response = requests.post(token_url, headers=token_headers, data=token_data)
+	json_data = response.json()
 
-	if response.status_code == 200:
+	if response.ok:
 		with open(json_file_name, 'w', encoding='utf-8') as file:
-			json_data = response.json()
 			json.dump(json_data, file, indent=4, ensure_ascii=False)
 		return response.json()["access_token"]
 	else:
@@ -87,6 +85,7 @@ def token_refresh(refresh_token, json_file_name="sample_token_app.json"):
 def channel_info(token, channel_id):
 	channel_info_url = "https://openapi.swit.io/v1/api/channel.info"
 	channel_info_headers = {
+		"content-type": "application/json",
 		"authorization": "Bearer " + token}
 	channel_info_params = {
 		"id": channel_id}
@@ -286,9 +285,7 @@ def guide_app():
 									"label": "Got it",
 									"style": "primary_filled",
 									"static_action": {
-										"action_type": "close_view"}}]}
-					}
-				}
+										"action_type": "close_view"}}]}}}
 				return modal_second_popup
 
 
