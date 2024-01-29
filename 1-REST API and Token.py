@@ -19,23 +19,21 @@ YOUR_REDIRECT_URI = 'http://localhost:' + YOUR_LOCALHOST_PORT + '/oauth/callback
 
 @app.route('/')
 def root():
-	return "This is the root of Your app."
+	return "This is the root of your app."
 
 
 @app.route('/oauth')
 def oauth():
 	'''redirect to GET request for authorization confirmation'''
-	swit_oauth_get_url = "https://openapi.swit.io/oauth/authorize"
+	get_url = "https://openapi.swit.io/oauth/authorize"
 
-	params_for_query_string = {
+	get_params_for_query_string = urllib.parse.urlencode({
 		"client_id": YOUR_CLIENT_ID,
 		"redirect_uri": YOUR_REDIRECT_URI,
 		"scope": YOUR_APPS_SCOPE,
-		"response_type": "code"
-	}
-	swit_oauth_get_query_string = urllib.parse.urlencode(params_for_query_string)
+		"response_type": "code"})
 
-	return redirect(swit_oauth_get_url + "?" + swit_oauth_get_query_string)
+	return redirect(get_url + "?" + get_params_for_query_string)
 
 
 @app.route('/oauth/callback')
@@ -43,22 +41,16 @@ def oauth_callback():
 	'''POST request to issue the token.'''
 	code = request.args.get('code')
 
-	swit_oauth_post_url = "https://openapi.swit.io/oauth/token"
-	swit_oauth_post_headers = {
-		"content-Type": "application/x-www-form-urlencoded"
-	}
-
-	swit_oauth_post_body = {
+	post_url = "https://openapi.swit.io/oauth/token"
+	post_headers = {
+		"content-Type": "application/x-www-form-urlencoded"}
+	post_body = {
 		"client_id": YOUR_CLIENT_ID,
 		"client_secret": YOUR_CLIENT_SECRET,
 		"redirect_uri": YOUR_REDIRECT_URI,
 		"code": code,
-		"grant_type": "authorization_code",
-	}
-
-	response = requests.post(swit_oauth_post_url,
-	                         headers=swit_oauth_post_headers,
-	                         data=swit_oauth_post_body)
+		"grant_type": "authorization_code"}
+	response = requests.post(post_url, headers=post_headers, data=post_body)
 
 	return response.json()
 

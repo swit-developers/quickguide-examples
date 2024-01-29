@@ -1,8 +1,7 @@
-import json
-
 from flask import Flask, redirect, request
 import requests
 import urllib.parse
+import json
 
 app = Flask(__name__)
 
@@ -21,25 +20,29 @@ YOUR_PROJECT_ID = 'THE_SWIT_PROJECT_ID_YOU_WANT'
 
 @app.route('/')
 def root():
-	return "This is the root of Your app."
+	return "This is the root of your app."
 
 
 @app.route('/oauth')
 def oauth():
+	'''
+	1. redirect to GET request for authorization confirmation
+	2. POST request to issue the token.
+	'''
 	code = request.args.get('code')
 
 	if code is None:
-		# redirect to GET request for authorization confirmation
 		get_url = "https://openapi.swit.io/oauth/authorize"
+
 		get_params_for_query_string = urllib.parse.urlencode({
 			"client_id": YOUR_CLIENT_ID,
 			"redirect_uri": YOUR_REDIRECT_URI,
 			"scope": YOUR_APPS_SCOPE,
 			"response_type": "code"})
+
 		return redirect(get_url + "?" + get_params_for_query_string)
 
 	else:
-		# POST request to issue the token.
 		post_url = "https://openapi.swit.io/oauth/token"
 		post_headers = {
 			"content-Type": "application/x-www-form-urlencoded"}
